@@ -6,7 +6,14 @@ import (
 	"net/http"
 )
 
-func Run() {
+type Server struct{}
+
+func Run() error {
+	server := Server{}
+	return server.Run()
+}
+
+func (s *Server) Run() error {
 	var addr = flag.String("addr", "127.0.0.1:8080", "The addr of the application.")
 	flag.Parse()
 
@@ -14,6 +21,8 @@ func Run() {
 
 	log.Println("Starting proxy server on", *addr)
 	if err := http.ListenAndServe(*addr, handler); err != nil {
-		log.Fatal("ListenAndServe:", err)
+		return err
 	}
+
+	return nil
 }
