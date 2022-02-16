@@ -8,6 +8,7 @@ import (
 
 type HealthcheckConfig struct {
 	Command               []string
+	EndpointAddress       string
 	CheckIntervalMillis   time.Duration
 	RecheckIntervalMillis time.Duration
 }
