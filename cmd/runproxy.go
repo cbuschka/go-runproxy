@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/cbuschka/runinit/internal"
+	"github.com/cbuschka/go-runproxy/internal"
 )
 
 func main() {

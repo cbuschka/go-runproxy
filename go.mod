@@ -1,4 +1,4 @@
-module github.com/cbuschka/runinit
+module github.com/cbuschka/go-runproxy
 
 go 1.16
 

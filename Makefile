@@ -7,7 +7,7 @@ endif
 build:
 	@cd ${PROJECT_DIR} && \
 	mkdir -p dist/ && \
-	go build -o dist/runinit cmd/runinit.go
+	go build -o dist/runproxy cmd/runproxy.go
 
 test:
 	@cd ${PROJECT_DIR} && \
