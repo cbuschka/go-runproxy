@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	err := internal.Run()
+	err := internal.Run(os.Args)
 	if err != nil {
 		log.Printf("failed: %v", err)
 		os.Exit(1)

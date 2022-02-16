@@ -10,10 +10,10 @@ import (
 )
 
 type probe struct {
-	command       []string
-	ctx           context.Context
-	checkTimeout  time.Duration
-	recheckTimeot time.Duration
+	command        []string
+	ctx            context.Context
+	checkTimeout   time.Duration
+	recheckTimeout time.Duration
 }
 
 func (p *probe) Watch(eventChan chan<- interface{}) {
@@ -27,7 +27,7 @@ func (p *probe) Watch(eventChan chan<- interface{}) {
 			if err != nil {
 				eventChan <- err
 			} else if available {
-				checkTimeout = p.recheckTimeot
+				checkTimeout = p.recheckTimeout
 				if !serviceAvailable {
 					serviceAvailable = true
 					eventChan <- "service available"
