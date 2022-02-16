@@ -1,9 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v3"
+	"log"
 	"os"
-	"time"
+	"strings"
 )
 
 type HealthcheckConfig struct {
@@ -14,29 +16,36 @@ type HealthcheckConfig struct {
 }
 
 type ProxyConfig struct {
-	ListenAddress string
-	TargetBaseUrl string
+	ListenAddress string `yaml:"listenAddress"`
+	TargetBaseUrl string `yaml:"targetBaseUrl"`
 }
 
 type ServiceConfig struct {
-	Command []string
+	Command []string `yaml:"command"`
 }
 
 type Config struct {
-	Proxy   ProxyConfig
-	Service ServiceConfig
-	Probe   HealthcheckConfig
+	Version     string            `yaml:"version"`
+	Proxy       ProxyConfig       `yaml:"proxy"`
+	Service     ServiceConfig     `yaml:"service"`
+	Healthcheck HealthcheckConfig `yaml:"healthcheck"`
 }
 
-func (c Config) overrideFromCommandLine(commandLine []string, cfg *cmdlineConfig) error {
+func (c *Config) overrideFromCommandLine(commandLine []string, cmdlineCfg *cmdlineConfig) error {
 
 	serviceCommand := extractServiceCommand(commandLine)
 	if len(serviceCommand) > 0 {
 		c.Service.Command = serviceCommand
 	}
 
-	if cfg.ListenAddress != "" {
-		c.Proxy.ListenAddress = cfg.ListenAddress
+	if cmdlineCfg.ListenAddress != "" {
+		log.Printf("Overriding listen address from command line: %s", cmdlineCfg.ListenAddress)
+		c.Proxy.ListenAddress = cmdlineCfg.ListenAddress
+	}
+
+	if cmdlineCfg.ServiceCommand != "" {
+		log.Printf("Overriding service command from command line: %s", cmdlineCfg.ServiceCommand)
+		c.Service.Command = strings.Split(cmdlineCfg.ServiceCommand, " ")
 	}
 
 	return nil
@@ -49,15 +58,18 @@ func NewConfig(commandLine []string) (*Config, error) {
 	}
 
 	cfg := Config{
+		Version: "1",
 		Proxy:   ProxyConfig{ListenAddress: ":8080"},
 		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}},
-		Probe: HealthcheckConfig{Command: []string{"curl", "-sLf", "http://localhost:8000"},
-			CheckIntervalMillis:   300 * time.Millisecond,
-			RecheckIntervalMillis: 30 * time.Second,
+		Healthcheck: HealthcheckConfig{Command: []string{"curl", "-sLf", "http://localhost:8000"},
+			CheckIntervalMillis:   300,
+			RecheckIntervalMillis: 30000,
 		},
 	}
 
 	if cmdlnCfg.ConfigFile != "" {
+		log.Printf("Loading config from %s...", cmdlnCfg.ConfigFile)
+
 		cfgBytes, err := os.ReadFile(cmdlnCfg.ConfigFile)
 		if err != nil {
 			return nil, err
@@ -66,6 +78,10 @@ func NewConfig(commandLine []string) (*Config, error) {
 		err = yaml.Unmarshal(cfgBytes, &cfg)
 		if err != nil {
 			return nil, err
+		}
+
+		if cfg.Version != "runproxy/1" {
+			return nil, fmt.Errorf("invalid version, expected runproxy/1")
 		}
 	}
 

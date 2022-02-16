@@ -11,7 +11,7 @@ func TestServiceStarts(t *testing.T) {
 	service := Service{ctx: ctx, command: []string{"bash", "-c", "sleep 1"}}
 	eventChan := make(chan interface{})
 
-	go service.Run(eventChan)
+	go service.run(eventChan)
 
 	event := <-eventChan
 	err, isError := event.(error)
@@ -37,7 +37,7 @@ func TestServiceFailureDetected(t *testing.T) {
 	service := Service{ctx: ctx, command: []string{"false"}}
 	eventChan := make(chan interface{})
 
-	go service.Run(eventChan)
+	go service.run(eventChan)
 
 	event := <-eventChan
 	err, isError := event.(error)

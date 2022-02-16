@@ -1,0 +1,10 @@
+version: "runproxy/1"
+proxy:
+  listenAddress: 0.0.0.0:8088
+  targetBaseUrl: localhost:8000
+service:
+  command: [ "python3", "-m", "http.server" ]
+healthcheck:
+  command: [ "curl", "-sfL", "localhost:8000" ]
+  checkIntervalMillis: 500
+  recheckIntervalMillis: 30000

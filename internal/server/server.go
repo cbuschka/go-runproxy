@@ -15,10 +15,11 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	eventChan := make(chan interface{})
 
 	server := Server{ctx: ctx, cancelFunc: cancelFunc,
-		eventChan: eventChan,
-		proxy:     proxy.NewProxy(ctx, cfg.Proxy.TargetBaseUrl),
-		service:   service.NewService(ctx, cfg.Service.Command),
-		probe:     healthcheck.NewHealthcheck(ctx, cfg.Probe)}
+		eventChan:  eventChan,
+		listenAddr: cfg.Proxy.ListenAddress,
+		proxy:      proxy.NewProxy(ctx, cfg.Proxy.TargetBaseUrl),
+		service:    service.NewService(ctx, cfg.Service.Command),
+		probe:      healthcheck.NewHealthcheck(ctx, cfg.Healthcheck)}
 	return &server, nil
 }
 
@@ -34,7 +35,7 @@ type Server struct {
 
 func (s *Server) Run() error {
 
-	go s.service.Run(s.eventChan)
+	s.service.Start(s.eventChan)
 
 	defer s.shutdown()
 
@@ -44,11 +45,11 @@ func (s *Server) Run() error {
 			log.Printf("event: %v", event)
 			if err, isErr := event.(error); isErr {
 				return err
-			} else if "Service started" == event {
+			} else if "service started" == event {
 				go s.startProbe()
-			} else if "Service available" == event {
+			} else if "service available" == event {
 				go s.startProxy()
-			} else if "Service stopped" == event {
+			} else if "service stopped" == event {
 				return nil
 			}
 		case _ = <-s.ctx.Done():
@@ -61,6 +62,11 @@ func (s *Server) shutdown() {
 	log.Println("Shutting down...")
 	if s.cancelFunc != nil {
 		s.cancelFunc()
+	}
+
+	if s.service != nil {
+		log.Println("Killing service...")
+		s.service.Kill()
 	}
 }
 

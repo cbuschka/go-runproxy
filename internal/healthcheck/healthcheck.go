@@ -25,8 +25,8 @@ func NewHealthcheck(ctx context.Context, cfg config.HealthcheckConfig) *Healthch
 	prb := Healthcheck{ctx: ctx,
 		command:         cfg.Command,
 		endpointAddress: cfg.EndpointAddress,
-		checkTimeout:    cfg.CheckIntervalMillis,
-		recheckTimeout:  cfg.RecheckIntervalMillis}
+		checkTimeout:   time.Duration(cfg.CheckIntervalMillis) * time.Millisecond,
+		recheckTimeout: time.Duration(cfg.RecheckIntervalMillis) * time.Millisecond}
 	return &prb
 }
 

@@ -5,8 +5,9 @@ import (
 )
 
 type cmdlineConfig struct {
-	ConfigFile    string `opts:"help=Config file in yaml format" opts:"short=c"`
-	ListenAddress string `opts:"help=Proxy listen address"`
+	ConfigFile     string `opts:"help=Config file in yaml format,short=c"`
+	ListenAddress  string `opts:"help=Proxy listen address,short=l"`
+	ServiceCommand string `opts:"help=Command to start service,short=e"`
 }
 
 func parseCommandline(args []string) (*cmdlineConfig, error) {

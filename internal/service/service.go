@@ -11,18 +11,21 @@ import (
 type Service struct {
 	ctx     context.Context
 	command []string
+
+	cmd *exec.Cmd
 }
 
 func NewService(ctx context.Context, command []string) *Service {
 	return &Service{ctx: ctx, command: command}
 }
 
-func (s *Service) Run(eventChan chan<- interface{}) {
+func (s *Service) run(eventChan chan<- interface{}) {
 	log.Printf("Starting service %v...", s.command)
 
 	program := s.command[0]
 	argv := s.command[1:]
 	cmd := exec.CommandContext(s.ctx, program, argv...)
+	s.cmd = cmd
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -52,4 +55,14 @@ func (s *Service) Run(eventChan chan<- interface{}) {
 	log.Printf("Service %v exited normally.", s.command)
 
 	eventChan <- "service stopped"
+}
+
+func (s *Service) Kill() {
+	if s.cmd != nil {
+		_ = s.cmd.Process.Kill()
+	}
+}
+
+func (s *Service) Start(eventChan chan interface{}) {
+	go s.run(eventChan)
 }
