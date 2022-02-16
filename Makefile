@@ -9,6 +9,11 @@ build:
 	mkdir -p dist/ && \
 	go build -o dist/runinit cmd/runinit.go
 
+test:
+	@cd ${PROJECT_DIR} && \
+	go test ./...
+
+.PHONY: clean
 clean:
 	@cd ${PROJECT_DIR} && \
 	rm -rf dist/
