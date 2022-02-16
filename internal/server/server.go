@@ -1,26 +1,24 @@
-package internal
+package server
 
 import (
 	"context"
+	"github.com/cbuschka/go-runproxy/internal/config"
+	"github.com/cbuschka/go-runproxy/internal/probe"
+	"github.com/cbuschka/go-runproxy/internal/proxy"
+	"github.com/cbuschka/go-runproxy/internal/service"
 	"log"
 	"net/http"
 )
 
-func NewServer(config *Config) (*Server, error) {
+func NewServer(cfg *config.Config) (*Server, error) {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	eventChan := make(chan interface{})
-	proxy := proxy{targetBaseUrl: config.proxy.targetBaseUrl}
-	service := service{ctx: ctx, command: config.service.command}
-	probe := probe{ctx: ctx,
-		command:        config.probe.command,
-		checkTimeout:   config.probe.checkIntervalMillis,
-		recheckTimeout: config.probe.recheckIntervalMillis}
 
 	server := Server{ctx: ctx, cancelFunc: cancelFunc,
 		eventChan: eventChan,
-		proxy:     &proxy,
-		service:   &service,
-		probe:     &probe}
+		proxy:     proxy.NewProxy(ctx, cfg.Proxy.TargetBaseUrl),
+		service:   service.NewService(ctx, cfg.Service.Command),
+		probe:     probe.NewProbe(ctx, cfg.Probe)}
 	return &server, nil
 }
 
@@ -29,9 +27,9 @@ type Server struct {
 	cancelFunc context.CancelFunc
 	eventChan  chan interface{}
 	listenAddr string
-	proxy      *proxy
-	service    *service
-	probe      *probe
+	proxy      *proxy.Proxy
+	service    *service.Service
+	probe      *probe.Probe
 }
 
 func (s *Server) Run() error {
@@ -46,11 +44,11 @@ func (s *Server) Run() error {
 			log.Printf("event: %v", event)
 			if err, isErr := event.(error); isErr {
 				return err
-			} else if "service started" == event {
+			} else if "Service started" == event {
 				go s.startProbe()
-			} else if "service available" == event {
+			} else if "Service available" == event {
 				go s.startProxy()
-			} else if "service stopped" == event {
+			} else if "Service stopped" == event {
 				return nil
 			}
 		case _ = <-s.ctx.Done():
@@ -68,7 +66,7 @@ func (s *Server) shutdown() {
 
 func (s *Server) startProxy() {
 
-	log.Println("Starting proxy server on", s.listenAddr)
+	log.Println("Starting Proxy server on", s.listenAddr)
 	if err := http.ListenAndServe(s.listenAddr, s.proxy); err != nil {
 		s.eventChan <- err
 	}
@@ -76,6 +74,6 @@ func (s *Server) startProxy() {
 
 func (s *Server) startProbe() {
 
-	log.Println("Starting probe...")
+	log.Println("Starting Probe...")
 	s.probe.Watch(s.eventChan)
 }

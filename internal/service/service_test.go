@@ -1,4 +1,4 @@
-package internal
+package service
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 func TestServiceStarts(t *testing.T) {
 	ctx := context.Background()
-	service := service{ctx: ctx, command: []string{"bash", "-c", "sleep 1"}}
+	service := Service{ctx: ctx, command: []string{"bash", "-c", "sleep 1"}}
 	eventChan := make(chan interface{})
 
 	go service.Run(eventChan)
@@ -20,7 +20,7 @@ func TestServiceStarts(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, "service started", event)
+	assert.Equal(t, "Service started", event)
 
 	event = <-eventChan
 	err, isError = event.(error)
@@ -29,12 +29,12 @@ func TestServiceStarts(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, "service stopped", event)
+	assert.Equal(t, "Service stopped", event)
 }
 
 func TestServiceFailureDetected(t *testing.T) {
 	ctx := context.Background()
-	service := service{ctx: ctx, command: []string{"false"}}
+	service := Service{ctx: ctx, command: []string{"false"}}
 	eventChan := make(chan interface{})
 
 	go service.Run(eventChan)
@@ -46,7 +46,7 @@ func TestServiceFailureDetected(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, "service started", event)
+	assert.Equal(t, "Service started", event)
 
 	event = <-eventChan
 	err, isError = event.(error)

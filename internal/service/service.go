@@ -1,4 +1,4 @@
-package internal
+package service
 
 import (
 	"context"
@@ -8,13 +8,17 @@ import (
 	"os/exec"
 )
 
-type service struct {
+type Service struct {
 	ctx     context.Context
 	command []string
 }
 
-func (s *service) Run(eventChan chan<- interface{}) {
-	log.Printf("Starting service %v...", s.command)
+func NewService(ctx context.Context, command []string) *Service {
+	return &Service{ctx: ctx, command: command}
+}
+
+func (s *Service) Run(eventChan chan<- interface{}) {
+	log.Printf("Starting Service %v...", s.command)
 
 	program := s.command[0]
 	argv := s.command[1:]
@@ -29,11 +33,11 @@ func (s *service) Run(eventChan chan<- interface{}) {
 	}
 	log.Printf("Service %v started.", s.command)
 
-	eventChan <- "service started"
+	eventChan <- "Service started"
 
 	err = cmd.Wait()
 	if err != nil {
-		log.Printf("Waiting for service %v failed: %v", s.command, err)
+		log.Printf("Waiting for Service %v failed: %v", s.command, err)
 		eventChan <- err
 		return
 	}
@@ -47,5 +51,5 @@ func (s *service) Run(eventChan chan<- interface{}) {
 
 	log.Printf("Service %v exited normally.", s.command)
 
-	eventChan <- "service stopped"
+	eventChan <- "Service stopped"
 }

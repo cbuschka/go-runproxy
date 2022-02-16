@@ -1,22 +1,31 @@
-package internal
+package probe
 
 import (
 	"context"
 	"fmt"
+	"github.com/cbuschka/go-runproxy/internal/config"
 	"log"
 	"os"
 	"os/exec"
 	"time"
 )
 
-type probe struct {
+type Probe struct {
 	command        []string
 	ctx            context.Context
 	checkTimeout   time.Duration
 	recheckTimeout time.Duration
 }
 
-func (p *probe) Watch(eventChan chan<- interface{}) {
+func NewProbe(ctx context.Context, cfg config.ProbeConfig) *Probe {
+	prb := Probe{ctx: ctx,
+		command:        cfg.Command,
+		checkTimeout:   cfg.CheckIntervalMillis,
+		recheckTimeout: cfg.RecheckIntervalMillis}
+	return &prb
+}
+
+func (p *Probe) Watch(eventChan chan<- interface{}) {
 
 	serviceAvailable := false
 	checkTimeout := p.checkTimeout
@@ -45,7 +54,7 @@ func (p *probe) Watch(eventChan chan<- interface{}) {
 	}
 }
 
-func (p *probe) isAvailable() (bool, error) {
+func (p *Probe) isAvailable() (bool, error) {
 
 	log.Println("Checking if service is available...")
 

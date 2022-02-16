@@ -1,6 +1,7 @@
-package internal
+package proxy
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -23,7 +24,7 @@ var hopHeaders = []string{
 	"Upgrade",
 }
 
-func (p *proxy) copyHeader(dst, src http.Header) {
+func (p *Proxy) copyHeader(dst, src http.Header) {
 	for k, vv := range src {
 		for _, v := range vv {
 			dst.Add(k, v)
@@ -31,14 +32,14 @@ func (p *proxy) copyHeader(dst, src http.Header) {
 	}
 }
 
-func (p *proxy) dropHopHeaders(header http.Header) {
+func (p *Proxy) dropHopHeaders(header http.Header) {
 	for _, h := range hopHeaders {
 		header.Del(h)
 	}
 }
 
-func (p *proxy) appendHostToXForwardHeader(header http.Header, host string) {
-	// If we aren't the first proxy retain prior
+func (p *Proxy) appendHostToXForwardHeader(header http.Header, host string) {
+	// If we aren't the first Proxy retain prior
 	// X-Forwarded-For information as a comma+space
 	// separated list and fold multiple headers into one.
 	if prior, ok := header["X-Forwarded-For"]; ok {
@@ -47,11 +48,15 @@ func (p *proxy) appendHostToXForwardHeader(header http.Header, host string) {
 	header.Set("X-Forwarded-For", host)
 }
 
-type proxy struct {
+func NewProxy(ctx context.Context, targetBaseUrl string) *Proxy {
+	return &Proxy{targetBaseUrl: targetBaseUrl}
+}
+
+type Proxy struct {
 	targetBaseUrl string
 }
 
-func (p *proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
+func (p *Proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	log.Println(req.RemoteAddr, " ", req.Method, " ", req.URL)
 
 	targetUrl, err := url.Parse(fmt.Sprintf("%s%s", p.targetBaseUrl, req.URL.Path))
