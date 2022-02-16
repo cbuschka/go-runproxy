@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -46,15 +48,17 @@ func (p *proxy) appendHostToXForwardHeader(header http.Header, host string) {
 }
 
 type proxy struct {
+	targetBaseUrl string
 }
 
 func (p *proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	log.Println(req.RemoteAddr, " ", req.Method, " ", req.URL)
 
-	if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
-		msg := "unsupported protocal scheme " + req.URL.Scheme
+	targetUrl, err := url.Parse(fmt.Sprintf("%s%s", p.targetBaseUrl, req.URL.Path))
+	if err != nil {
+		msg := "internal error"
 		http.Error(wr, msg, http.StatusBadRequest)
-		log.Println(msg)
+		log.Printf("creating url failed: %v", err)
 		return
 	}
 
@@ -70,6 +74,7 @@ func (p *proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 		p.appendHostToXForwardHeader(req.Header, clientIP)
 	}
 
+	req.URL = targetUrl
 	resp, err := client.Do(req)
 	if err != nil {
 		http.Error(wr, "Server Error", http.StatusInternalServerError)
