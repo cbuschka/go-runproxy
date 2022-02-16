@@ -3,8 +3,10 @@ package internal
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -18,12 +20,35 @@ type Server struct {
 	probe      *probe
 }
 
+func extractServiceCommand(cmdline []string) ([]string, error) {
+	cmd := []string{}
+	doubleDashSeen := false
+	for _, arg := range cmdline {
+		if doubleDashSeen {
+			cmd = append(cmd, arg)
+		} else if arg == "--" {
+			doubleDashSeen = true
+		}
+	}
+
+	if doubleDashSeen == false || len(cmd) == 0 {
+		return nil, fmt.Errorf("no service command")
+	}
+
+	return cmd, nil
+}
+
 func Run() error {
+	serviceCommand, err := extractServiceCommand(os.Args)
+	if err != nil {
+		return err
+	}
+
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	eventChan := make(chan interface{})
 	proxy := proxy{targetBaseUrl: "http://localhost:8000"}
 	service := service{ctx: ctx,
-		command: []string{"python3", "-m", "http.server"}}
+		command: serviceCommand}
 	probe := probe{ctx: ctx,
 		command:      []string{"curl", "-sLf", "-o", "/dev/null", "http://localhost:8000"},
 		checkTimeout: 300 * time.Millisecond, recheckTimeot: 30 * time.Second}
