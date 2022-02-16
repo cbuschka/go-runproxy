@@ -3,9 +3,13 @@ package command
 import (
 	"github.com/cbuschka/go-runproxy/internal/config"
 	"github.com/cbuschka/go-runproxy/internal/server"
+	"log"
+	"os"
 )
 
 func Run(commandLine []string) error {
+	log.SetOutput(os.Stderr)
+
 	cfg, err := config.NewConfig(commandLine)
 	if err != nil {
 		return err

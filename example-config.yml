@@ -5,6 +5,6 @@ proxy:
 service:
   command: [ "python3", "-m", "http.server" ]
 healthcheck:
-  command: [ "curl", "-sfL", "localhost:8000" ]
+  command: [ "curl", "-sfL", "-o", "/dev/null", "localhost:8000" ]
   checkIntervalMillis: 500
   recheckIntervalMillis: 30000

@@ -8,6 +8,8 @@ import (
 	"github.com/cbuschka/go-runproxy/internal/service"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 )
 
 func NewServer(cfg *config.Config) (*Server, error) {
@@ -37,6 +39,8 @@ func (s *Server) Run() error {
 
 	s.service.Start(s.eventChan)
 
+	s.installSigHandler()
+
 	defer s.shutdown()
 
 	for {
@@ -51,6 +55,8 @@ func (s *Server) Run() error {
 				go s.startProxy()
 			} else if "service stopped" == event {
 				return nil
+			} else if "shutdown" == event {
+				break
 			}
 		case _ = <-s.ctx.Done():
 			break
@@ -58,8 +64,19 @@ func (s *Server) Run() error {
 	}
 }
 
+func (s *Server) installSigHandler() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, os.Kill)
+	go func() {
+		for _ = range c {
+			s.shutdown()
+		}
+	}()
+}
+
 func (s *Server) shutdown() {
 	log.Println("Shutting down...")
+
 	if s.cancelFunc != nil {
 		s.cancelFunc()
 	}
