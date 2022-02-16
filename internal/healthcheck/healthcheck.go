@@ -1,4 +1,4 @@
-package probe
+package healthcheck
 
 import (
 	"context"
@@ -10,22 +10,22 @@ import (
 	"time"
 )
 
-type Probe struct {
+type Healthcheck struct {
 	command        []string
 	ctx            context.Context
 	checkTimeout   time.Duration
 	recheckTimeout time.Duration
 }
 
-func NewProbe(ctx context.Context, cfg config.ProbeConfig) *Probe {
-	prb := Probe{ctx: ctx,
+func NewHealthcheck(ctx context.Context, cfg config.HealthcheckConfig) *Healthcheck {
+	prb := Healthcheck{ctx: ctx,
 		command:        cfg.Command,
 		checkTimeout:   cfg.CheckIntervalMillis,
 		recheckTimeout: cfg.RecheckIntervalMillis}
 	return &prb
 }
 
-func (p *Probe) Watch(eventChan chan<- interface{}) {
+func (p *Healthcheck) Watch(eventChan chan<- interface{}) {
 
 	serviceAvailable := false
 	checkTimeout := p.checkTimeout
@@ -54,7 +54,7 @@ func (p *Probe) Watch(eventChan chan<- interface{}) {
 	}
 }
 
-func (p *Probe) isAvailable() (bool, error) {
+func (p *Healthcheck) isAvailable() (bool, error) {
 
 	log.Println("Checking if service is available...")
 

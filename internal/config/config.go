@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type ProbeConfig struct {
+type HealthcheckConfig struct {
 	Command               []string
 	CheckIntervalMillis   time.Duration
 	RecheckIntervalMillis time.Duration
@@ -24,7 +24,7 @@ type ServiceConfig struct {
 type Config struct {
 	Proxy   ProxyConfig
 	Service ServiceConfig
-	Probe   ProbeConfig
+	Probe   HealthcheckConfig
 }
 
 func (c Config) overrideFromCommandLine(commandLine []string, cfg *cmdlineConfig) error {
@@ -50,7 +50,7 @@ func NewConfig(commandLine []string) (*Config, error) {
 	cfg := Config{
 		Proxy:   ProxyConfig{ListenAddress: ":8080"},
 		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}},
-		Probe: ProbeConfig{Command: []string{"curl", "-sLf", "http://localhost:8000"},
+		Probe: HealthcheckConfig{Command: []string{"curl", "-sLf", "http://localhost:8000"},
 			CheckIntervalMillis:   300 * time.Millisecond,
 			RecheckIntervalMillis: 30 * time.Second,
 		},

@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"github.com/cbuschka/go-runproxy/internal/config"
-	"github.com/cbuschka/go-runproxy/internal/probe"
+	"github.com/cbuschka/go-runproxy/internal/healthcheck"
 	"github.com/cbuschka/go-runproxy/internal/proxy"
 	"github.com/cbuschka/go-runproxy/internal/service"
 	"log"
@@ -18,7 +18,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		eventChan: eventChan,
 		proxy:     proxy.NewProxy(ctx, cfg.Proxy.TargetBaseUrl),
 		service:   service.NewService(ctx, cfg.Service.Command),
-		probe:     probe.NewProbe(ctx, cfg.Probe)}
+		probe:     healthcheck.NewHealthcheck(ctx, cfg.Probe)}
 	return &server, nil
 }
 
@@ -29,7 +29,7 @@ type Server struct {
 	listenAddr string
 	proxy      *proxy.Proxy
 	service    *service.Service
-	probe      *probe.Probe
+	probe      *healthcheck.Healthcheck
 }
 
 func (s *Server) Run() error {
@@ -66,7 +66,7 @@ func (s *Server) shutdown() {
 
 func (s *Server) startProxy() {
 
-	log.Println("Starting Proxy server on", s.listenAddr)
+	log.Println("Starting proxy server on", s.listenAddr)
 	if err := http.ListenAndServe(s.listenAddr, s.proxy); err != nil {
 		s.eventChan <- err
 	}
@@ -74,6 +74,6 @@ func (s *Server) startProxy() {
 
 func (s *Server) startProbe() {
 
-	log.Println("Starting Probe...")
+	log.Println("Starting healthcheck...")
 	s.probe.Watch(s.eventChan)
 }
