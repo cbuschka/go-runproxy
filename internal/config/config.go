@@ -1,6 +1,8 @@
 package config
 
 import (
+	"gopkg.in/yaml.v3"
+	"os"
 	"time"
 )
 
@@ -25,7 +27,26 @@ type Config struct {
 	Probe   ProbeConfig
 }
 
+func (c Config) overrideFromCommandLine(commandLine []string, cfg *cmdlineConfig) error {
+
+	serviceCommand := extractServiceCommand(commandLine)
+	if len(serviceCommand) > 0 {
+		c.Service.Command = serviceCommand
+	}
+
+	if cfg.ListenAddress != "" {
+		c.Proxy.ListenAddress = cfg.ListenAddress
+	}
+
+	return nil
+}
+
 func NewConfig(commandLine []string) (*Config, error) {
+	cmdlnCfg, err := parseCommandline(commandLine)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := Config{
 		Proxy:   ProxyConfig{ListenAddress: ":8080"},
 		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}},
@@ -35,7 +56,22 @@ func NewConfig(commandLine []string) (*Config, error) {
 		},
 	}
 
-	cfg.Service.Command = extractServiceCommand(commandLine)
+	if cmdlnCfg.ConfigFile != "" {
+		cfgBytes, err := os.ReadFile(cmdlnCfg.ConfigFile)
+		if err != nil {
+			return nil, err
+		}
+
+		err = yaml.Unmarshal(cfgBytes, &cfg)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = cfg.overrideFromCommandLine(commandLine, cmdlnCfg)
+	if err != nil {
+		return nil, err
+	}
 
 	return &cfg, nil
 }
