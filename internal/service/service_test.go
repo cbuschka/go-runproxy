@@ -20,7 +20,7 @@ func TestServiceStarts(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, "Service started", event)
+	assert.Equal(t, "service started", event)
 
 	event = <-eventChan
 	err, isError = event.(error)
@@ -29,7 +29,7 @@ func TestServiceStarts(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, "Service stopped", event)
+	assert.Equal(t, "service stopped", event)
 }
 
 func TestServiceFailureDetected(t *testing.T) {
@@ -46,7 +46,7 @@ func TestServiceFailureDetected(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, "Service started", event)
+	assert.Equal(t, "service started", event)
 
 	event = <-eventChan
 	err, isError = event.(error)

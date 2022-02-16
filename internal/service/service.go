@@ -18,7 +18,7 @@ func NewService(ctx context.Context, command []string) *Service {
 }
 
 func (s *Service) Run(eventChan chan<- interface{}) {
-	log.Printf("Starting Service %v...", s.command)
+	log.Printf("Starting service %v...", s.command)
 
 	program := s.command[0]
 	argv := s.command[1:]
@@ -33,11 +33,11 @@ func (s *Service) Run(eventChan chan<- interface{}) {
 	}
 	log.Printf("Service %v started.", s.command)
 
-	eventChan <- "Service started"
+	eventChan <- "service started"
 
 	err = cmd.Wait()
 	if err != nil {
-		log.Printf("Waiting for Service %v failed: %v", s.command, err)
+		log.Printf("Waiting for service %v failed: %v", s.command, err)
 		eventChan <- err
 		return
 	}
@@ -51,5 +51,5 @@ func (s *Service) Run(eventChan chan<- interface{}) {
 
 	log.Printf("Service %v exited normally.", s.command)
 
-	eventChan <- "Service stopped"
+	eventChan <- "service stopped"
 }
