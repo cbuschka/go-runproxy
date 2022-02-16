@@ -64,10 +64,10 @@ func Run() error {
 }
 
 func (s *Server) init() error {
-	var addr = flag.String("addr", "127.0.0.1:8080", "The addr of the application.")
+	listenAddr := flag.String("listen", "127.0.0.1:8080", "The listen address (ip:port) of runproxy.")
 	flag.Parse()
 
-	s.listenAddr = *addr
+	s.listenAddr = *listenAddr
 
 	return nil
 }
