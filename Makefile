@@ -13,6 +13,10 @@ test:
 	@cd ${PROJECT_DIR} && \
 	go test ./...
 
+run:
+	@cd ${PROJECT_DIR} && \
+	go run cmd/runproxy.go -c example-config.yml
+
 .PHONY: clean
 clean:
 	@cd ${PROJECT_DIR} && \
