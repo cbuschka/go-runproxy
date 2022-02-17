@@ -9,10 +9,10 @@ import (
 )
 
 type HealthcheckConfig struct {
-	Command               []string
-	EndpointAddress       string
-	CheckIntervalMillis   time.Duration
-	RecheckIntervalMillis time.Duration
+	Command               []string `yaml:"command"`
+	EndpointAddress       string   `yaml:"endpointAddress"`
+	CheckIntervalMillis   int      `yaml:"checkIntervalMillis"`
+	RecheckIntervalMillis int      `yaml:"recheckIntervalMillis"`
 }
 
 type ProxyConfig struct {
@@ -58,7 +58,7 @@ func NewConfig(commandLine []string) (*Config, error) {
 	}
 
 	cfg := Config{
-		Version: "1",
+		Version: "runproxy/1",
 		Proxy:   ProxyConfig{ListenAddress: ":8080"},
 		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}},
 		Healthcheck: HealthcheckConfig{Command: []string{"curl", "-sLf", "http://localhost:8000"},

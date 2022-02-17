@@ -6,5 +6,6 @@ service:
   command: [ "python3", "-m", "http.server" ]
 healthcheck:
   command: [ "curl", "-sfL", "-o", "/dev/null", "localhost:8000" ]
+  endpointAddress: "http://localhost:8000"
   checkIntervalMillis: 500
   recheckIntervalMillis: 30000
