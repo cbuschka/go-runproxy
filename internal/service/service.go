@@ -27,9 +27,21 @@ func (s *Service) run(eventChan chan<- interface{}) {
 	cmd := exec.CommandContext(s.ctx, program, argv...)
 	s.cmd = cmd
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Start()
+	stdoutRd, err := cmd.StdoutPipe()
+	if err != nil {
+		eventChan <- err
+		return
+	}
+	go pump(stdoutRd, "Service (out):", os.Stdout, eventChan)
+
+	stderrRd, err := cmd.StderrPipe()
+	if err != nil {
+		eventChan <- err
+		return
+	}
+	go pump(stderrRd, "Service (err):", os.Stderr, eventChan)
+
+	err = cmd.Start()
 	if err != nil {
 		eventChan <- err
 		return
