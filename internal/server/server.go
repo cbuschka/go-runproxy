@@ -14,13 +14,20 @@ import (
 
 func NewServer(cfg *config.Config) (*Server, error) {
 	ctx, cancelFunc := context.WithCancel(context.Background())
+
 	eventChan := make(chan interface{})
+
+	svc, err := service.NewService(ctx, cfg.Service.Command, cfg.Service.StartupMessageMatch)
+	if err != nil {
+		cancelFunc()
+		return nil, err
+	}
 
 	server := Server{ctx: ctx, cancelFunc: cancelFunc,
 		eventChan:  eventChan,
 		listenAddr: cfg.Proxy.ListenAddress,
 		proxy:      proxy.NewProxy(ctx, cfg.Proxy.TargetBaseUrl),
-		service:    service.NewService(ctx, cfg.Service.Command),
+		service:    svc,
 		probe:      healthcheck.NewHealthcheck(ctx, cfg.Healthcheck)}
 	return &server, nil
 }

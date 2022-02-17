@@ -4,6 +4,7 @@ proxy:
   targetBaseUrl: http://localhost:8000
 service:
   command: [ "python3", "-m", "http.server" ]
+  startupMessageMatch: '^.*$'
 healthcheck:
   command: [ "curl", "-sfL", "-o", "/dev/null", "localhost:8000" ]
   endpointAddress: "http://localhost:8000"

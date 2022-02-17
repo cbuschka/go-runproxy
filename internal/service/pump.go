@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"regexp"
 )
 
-func pump(rd io.Reader, prefix string, eventChan chan<- interface{}) {
+func pump(rd io.Reader, prefix string, startupMessageMatchPattern *regexp.Regexp, eventChan chan<- interface{}) {
 
 	prefixStr := fmt.Sprintf("%s ", prefix)
 
@@ -23,7 +24,12 @@ func pump(rd io.Reader, prefix string, eventChan chan<- interface{}) {
 			return
 		}
 
-		log.Println(prefixStr, string(line))
+		lineStr := string(line)
+		if startupMessageMatchPattern != nil && startupMessageMatchPattern.MatchString(lineStr) {
+			eventChan <- "startup message seen"
+		}
+
+		log.Println(prefixStr, lineStr)
 		if err != nil {
 			eventChan <- err
 			return

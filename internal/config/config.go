@@ -21,7 +21,8 @@ type ProxyConfig struct {
 }
 
 type ServiceConfig struct {
-	Command []string `yaml:"command"`
+	Command             []string `yaml:"command"`
+	StartupMessageMatch string   `yaml:"startupMessageMatch"`
 }
 
 type Config struct {
@@ -60,7 +61,7 @@ func NewConfig(commandLine []string) (*Config, error) {
 	cfg := Config{
 		Version: "runproxy/1",
 		Proxy:   ProxyConfig{ListenAddress: ":8080"},
-		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}},
+		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}, StartupMessageMatch: ""},
 		Healthcheck: HealthcheckConfig{Command: []string{"curl", "-sLf", "http://localhost:8000"},
 			CheckIntervalMillis:   300,
 			RecheckIntervalMillis: 30000,

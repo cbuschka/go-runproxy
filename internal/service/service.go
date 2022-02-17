@@ -5,17 +5,28 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"regexp"
 )
 
 type Service struct {
-	ctx     context.Context
-	command []string
+	ctx                        context.Context
+	command                    []string
+	startupMessageMatchPattern *regexp.Regexp
 
 	cmd *exec.Cmd
 }
 
-func NewService(ctx context.Context, command []string) *Service {
-	return &Service{ctx: ctx, command: command}
+func NewService(ctx context.Context, command []string, startupMessageMatch string) (*Service, error) {
+	var startupMessageMatchPattern *regexp.Regexp = nil
+	if startupMessageMatch != "" {
+		var err error
+		startupMessageMatchPattern, err = regexp.Compile(startupMessageMatch)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &Service{ctx: ctx, command: command, startupMessageMatchPattern: startupMessageMatchPattern, cmd: nil}, nil
 }
 
 func (s *Service) run(eventChan chan<- interface{}) {
@@ -31,14 +42,14 @@ func (s *Service) run(eventChan chan<- interface{}) {
 		eventChan <- err
 		return
 	}
-	go pump(stdoutRd, "Service (out):", eventChan)
+	go pump(stdoutRd, "Service (out):", s.startupMessageMatchPattern, eventChan)
 
 	stderrRd, err := cmd.StderrPipe()
 	if err != nil {
 		eventChan <- err
 		return
 	}
-	go pump(stderrRd, "Service (err):", eventChan)
+	go pump(stderrRd, "Service (err):", s.startupMessageMatchPattern, eventChan)
 
 	err = cmd.Start()
 	if err != nil {
