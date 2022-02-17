@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"os/exec"
 )
 
@@ -32,14 +31,14 @@ func (s *Service) run(eventChan chan<- interface{}) {
 		eventChan <- err
 		return
 	}
-	go pump(stdoutRd, "Service (out):", os.Stdout, eventChan)
+	go pump(stdoutRd, "Service (out):", eventChan)
 
 	stderrRd, err := cmd.StderrPipe()
 	if err != nil {
 		eventChan <- err
 		return
 	}
-	go pump(stderrRd, "Service (err):", os.Stderr, eventChan)
+	go pump(stderrRd, "Service (err):", eventChan)
 
 	err = cmd.Start()
 	if err != nil {

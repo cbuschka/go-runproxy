@@ -83,7 +83,8 @@ func (p *Proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	resp, err := client.Do(req)
 	if err != nil {
 		http.Error(wr, "Server Error", http.StatusInternalServerError)
-		log.Fatal("ServeHTTP:", err)
+		log.Println("forwarding failed:", err)
+		return
 	}
 	defer resp.Body.Close()
 

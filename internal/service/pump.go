@@ -7,9 +7,9 @@ import (
 	"log"
 )
 
-func pump(rd io.Reader, prefix string, wr io.Writer, eventChan chan<- interface{}) {
+func pump(rd io.Reader, prefix string, eventChan chan<- interface{}) {
 
-	prefixBytes := []byte(fmt.Sprintf("%s ", prefix))
+	prefixStr := fmt.Sprintf("%s ", prefix)
 
 	bufferedRd := bufio.NewReader(rd)
 
@@ -23,7 +23,7 @@ func pump(rd io.Reader, prefix string, wr io.Writer, eventChan chan<- interface{
 			return
 		}
 
-		log.Println(string(prefixBytes), string(line))
+		log.Println(prefixStr, string(line))
 		if err != nil {
 			eventChan <- err
 			return
