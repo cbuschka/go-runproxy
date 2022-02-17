@@ -17,7 +17,7 @@ func TestLoadsCompleteConfigNoOverrides(t *testing.T) {
 
 	assert.Equal(t, "runproxy/1", cfg.Version)
 	assert.Equal(t, "0.0.0.0:8088", cfg.Proxy.ListenAddress)
-	assert.Equal(t, "localhost:8000", cfg.Proxy.TargetBaseUrl)
+	assert.Equal(t, "http://localhost:8000", cfg.Proxy.TargetBaseUrl)
 	assert.Equal(t, []string{"python3", "-m", "http.server"}, cfg.Service.Command)
 	assert.Equal(t, "http://localhost:8000", cfg.Healthcheck.EndpointAddress)
 	assert.Equal(t, []string{"curl", "-sfL", "-o", "/dev/null", "localhost:8000"}, cfg.Healthcheck.Command)
