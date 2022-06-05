@@ -9,10 +9,14 @@ import (
 )
 
 type HealthcheckConfig struct {
-	Command               []string `yaml:"command"`
-	EndpointAddress       string   `yaml:"endpointAddress"`
-	CheckIntervalMillis   int      `yaml:"checkIntervalMillis"`
-	RecheckIntervalMillis int      `yaml:"recheckIntervalMillis"`
+	Http                  HttpHealthcheckConfig `yaml:"http"`
+	Command               []string              `yaml:"command"`
+	CheckIntervalMillis   int                   `yaml:"checkIntervalMillis"`
+	RecheckIntervalMillis int                   `yaml:"recheckIntervalMillis"`
+}
+
+type HttpHealthcheckConfig struct {
+	EndpointAddress string `yaml:"endpointAddress"`
 }
 
 type HttpProxyConfig struct {

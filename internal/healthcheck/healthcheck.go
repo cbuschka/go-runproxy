@@ -24,9 +24,9 @@ type Healthcheck struct {
 func NewHealthcheck(ctx context.Context, cfg config.HealthcheckConfig) *Healthcheck {
 	prb := Healthcheck{ctx: ctx,
 		command:         cfg.Command,
-		endpointAddress: cfg.EndpointAddress,
-		checkTimeout:   time.Duration(cfg.CheckIntervalMillis) * time.Millisecond,
-		recheckTimeout: time.Duration(cfg.RecheckIntervalMillis) * time.Millisecond}
+		endpointAddress: cfg.Http.EndpointAddress,
+		checkTimeout:    time.Duration(cfg.CheckIntervalMillis) * time.Millisecond,
+		recheckTimeout:  time.Duration(cfg.RecheckIntervalMillis) * time.Millisecond}
 	return &prb
 }
 
