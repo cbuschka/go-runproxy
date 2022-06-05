@@ -25,8 +25,8 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	server := Server{ctx: ctx, cancelFunc: cancelFunc,
 		eventChan:  eventChan,
-		listenAddr: cfg.Proxy.ListenAddress,
-		proxy:      proxy.NewProxy(ctx, cfg.Proxy.TargetBaseUrl),
+		listenAddr: cfg.Proxy.Http.ListenAddress,
+		proxy:      proxy.NewProxy(ctx, cfg.Proxy.Http.TargetBaseUrl),
 		service:    svc,
 		probe:      healthcheck.NewHealthcheck(ctx, cfg.Healthcheck)}
 	return &server, nil

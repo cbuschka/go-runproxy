@@ -15,9 +15,13 @@ type HealthcheckConfig struct {
 	RecheckIntervalMillis int      `yaml:"recheckIntervalMillis"`
 }
 
-type ProxyConfig struct {
+type HttpProxyConfig struct {
 	ListenAddress string `yaml:"listenAddress"`
 	TargetBaseUrl string `yaml:"targetBaseUrl"`
+}
+
+type ProxyConfig struct {
+	Http HttpProxyConfig `yaml:"http"`
 }
 
 type ServiceConfig struct {
@@ -41,7 +45,7 @@ func (c *Config) overrideFromCommandLine(commandLine []string, cmdlineCfg *cmdli
 
 	if cmdlineCfg.ListenAddress != "" {
 		log.Printf("Overriding listen address from command line: %s", cmdlineCfg.ListenAddress)
-		c.Proxy.ListenAddress = cmdlineCfg.ListenAddress
+		c.Proxy.Http.ListenAddress = cmdlineCfg.ListenAddress
 	}
 
 	if cmdlineCfg.ServiceCommand != "" {
@@ -60,7 +64,7 @@ func NewConfig(commandLine []string) (*Config, error) {
 
 	cfg := Config{
 		Version: "runproxy/1",
-		Proxy:   ProxyConfig{ListenAddress: ":8080"},
+		Proxy:   ProxyConfig{Http: HttpProxyConfig{ListenAddress: ":8080"}},
 		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}, StartupMessageMatch: ""},
 		Healthcheck: HealthcheckConfig{Command: []string{"curl", "-sLf", "http://localhost:8000"},
 			CheckIntervalMillis:   300,
