@@ -4,11 +4,11 @@ proxy:
     listenAddress: 0.0.0.0:8088
     targetBaseUrl: http://localhost:8000
 service:
-  command: [ "python3", "-m", "http.server" ]
+  command: [ "bash", "-c", "sleep 3 && python3 -m http.server" ]
   startupMessageMatch: '^.*$'
 healthcheck:
-  command: [ "curl", "-sfL", "-o", "/dev/null", "localhost:8000" ]
+  #command: [ "curl", "-sfL", "-o", "/dev/null", "localhost:8000" ]
   http:
     endpointAddress: "http://localhost:8000"
   checkIntervalMillis: 500
-  recheckIntervalMillis: 30000
+  recheckIntervalMillis: 3000

@@ -53,7 +53,7 @@ func (s *Server) Run() error {
 	for {
 		select {
 		case event := <-s.eventChan:
-			log.Printf("event: %v", event)
+			log.Printf("Event \"%v\" seen.", event)
 			if err, isErr := event.(error); isErr {
 				return err
 			} else if "service started" == event {
