@@ -14,6 +14,7 @@ func pump(rd io.Reader, prefix string, startupMessageMatchPattern *regexp.Regexp
 
 	bufferedRd := bufio.NewReader(rd)
 
+	startupMessageSeen := false
 	for {
 		line, _, err := bufferedRd.ReadLine()
 		if err != nil {
@@ -25,8 +26,9 @@ func pump(rd io.Reader, prefix string, startupMessageMatchPattern *regexp.Regexp
 		}
 
 		lineStr := string(line)
-		if startupMessageMatchPattern != nil && startupMessageMatchPattern.MatchString(lineStr) {
+		if !startupMessageSeen && startupMessageMatchPattern != nil && startupMessageMatchPattern.MatchString(lineStr) {
 			eventChan <- "startup message seen"
+			startupMessageSeen = true
 		}
 
 		log.Println(prefixStr, lineStr)

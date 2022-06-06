@@ -11,7 +11,6 @@ import (
 
 type HealthcheckStrategy interface {
 	IsAvailable(ctx context.Context) (bool, error)
-	String() string
 }
 
 type HttpHealthcheckStrategy struct {

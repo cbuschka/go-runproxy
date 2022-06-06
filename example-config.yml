@@ -1,8 +1,11 @@
 version: "runproxy/1"
 proxy:
-  http:
+  #http:
+  #  listenAddress: 0.0.0.0:8088
+  #  targetBaseUrl: http://localhost:8000
+  tcp:
     listenAddress: 0.0.0.0:8088
-    targetBaseUrl: http://localhost:8000
+    targetEndpointAddress: localhost:8000
 service:
   command: [ "bash", "-c", "sleep 3 && python3 -m http.server" ]
   startupMessageMatch: '^.*$'

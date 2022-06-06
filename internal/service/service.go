@@ -42,14 +42,14 @@ func (s *Service) run(eventChan chan<- interface{}) {
 		eventChan <- err
 		return
 	}
-	go pump(stdoutRd, "Service (out):", s.startupMessageMatchPattern, eventChan)
+	go pump(stdoutRd, "Service (stdout):", s.startupMessageMatchPattern, eventChan)
 
 	stderrRd, err := cmd.StderrPipe()
 	if err != nil {
 		eventChan <- err
 		return
 	}
-	go pump(stderrRd, "Service (err):", s.startupMessageMatchPattern, eventChan)
+	go pump(stderrRd, "Service (stderr):", s.startupMessageMatchPattern, eventChan)
 
 	err = cmd.Start()
 	if err != nil {

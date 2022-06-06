@@ -7,7 +7,6 @@ import (
 	"github.com/cbuschka/go-runproxy/internal/proxy"
 	"github.com/cbuschka/go-runproxy/internal/service"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 )
@@ -23,12 +22,17 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		return nil, err
 	}
 
+	prx, err := proxy.NewProxy(ctx, cfg.Proxy)
+	if err != nil {
+		cancelFunc()
+		return nil, err
+	}
+
 	server := Server{ctx: ctx, cancelFunc: cancelFunc,
-		eventChan:  eventChan,
-		listenAddr: cfg.Proxy.Http.ListenAddress,
-		proxy:      proxy.NewProxy(ctx, cfg.Proxy.Http.TargetBaseUrl),
-		service:    svc,
-		probe:      healthcheck.NewHealthcheck(ctx, cfg.Healthcheck)}
+		eventChan: eventChan,
+		proxy:     prx,
+		service:   svc,
+		probe:     healthcheck.NewHealthcheck(ctx, cfg.Healthcheck)}
 	return &server, nil
 }
 
@@ -36,7 +40,6 @@ type Server struct {
 	ctx        context.Context
 	cancelFunc context.CancelFunc
 	eventChan  chan interface{}
-	listenAddr string
 	proxy      *proxy.Proxy
 	service    *service.Service
 	probe      *healthcheck.Healthcheck
@@ -95,11 +98,7 @@ func (s *Server) shutdown() {
 }
 
 func (s *Server) startProxy() {
-
-	log.Println("Starting proxy server on", s.listenAddr)
-	if err := http.ListenAndServe(s.listenAddr, s.proxy); err != nil {
-		s.eventChan <- err
-	}
+	s.proxy.Start(s.eventChan)
 }
 
 func (s *Server) startProbe() {

@@ -24,8 +24,14 @@ type HttpProxyConfig struct {
 	TargetBaseUrl string `yaml:"targetBaseUrl"`
 }
 
+type TcpProxyConfig struct {
+	ListenAddress         string `yaml:"listenAddress"`
+	TargetEndpointAddress string `yaml:"targetEndpointAddress"`
+}
+
 type ProxyConfig struct {
-	Http HttpProxyConfig `yaml:"http"`
+	Http *HttpProxyConfig `yaml:"http"`
+	Tcp  *TcpProxyConfig  `yaml:"tcp"`
 }
 
 type ServiceConfig struct {
@@ -68,7 +74,7 @@ func NewConfig(commandLine []string) (*Config, error) {
 
 	cfg := Config{
 		Version: "runproxy/1",
-		Proxy:   ProxyConfig{Http: HttpProxyConfig{ListenAddress: ":8080"}},
+		Proxy:   ProxyConfig{Http: nil, Tcp: nil},
 		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}, StartupMessageMatch: ""},
 		Healthcheck: HealthcheckConfig{
 			Command:               []string{},
