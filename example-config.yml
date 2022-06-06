@@ -1,17 +1,9 @@
 version: "runproxy/1"
-proxy:
-  #http:
-  #  listenAddress: 0.0.0.0:8088
-  #  targetBaseUrl: http://localhost:8000
-  tcp:
-    listenAddress: 0.0.0.0:8088
-    targetEndpointAddress: localhost:8000
+listenAddress: 0.0.0.0:8088
+serviceListenAddress: localhost:8000
 service:
-  command: [ "bash", "-c", "sleep 3 && python3 -m http.server" ]
-  startupMessageMatch: '^.*$'
-healthcheck:
-  #command: [ "curl", "-sfL", "-o", "/dev/null", "localhost:8000" ]
+  command: [ "bash", "-c", "sleep 3 && echo 'Started application in 6.993 seconds.' && python3 -m http.server" ]
+readyCheck:
+  startupMessageMatch: '^.*Started application in.*seconds.*$'
   http:
-    endpointAddress: "http://localhost:8000"
-  checkIntervalMillis: 500
-  recheckIntervalMillis: 3000
+    endpointAddress: "http://localhost:8000/actuator/health"
