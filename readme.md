@@ -7,8 +7,19 @@ resources for initialization. These resources will we revoked when the maximum s
 opens a receiving socket. In case when the service opens the socket before startup has finished (as it is the case with
 spring boot) the service is throttled and cannot finish startup anymore.
 
-runproxy is a small http/tcp proxy that checks the service if it has come up yet (i.e. via the actuator health check
-endpoint or magic line appearing in log output) and subsequently opens a socket to signal cloud run that the container is ready.
+runproxy is a small tcp proxy that checks the service if it has come up yet (i.e. via a magic line appearing in the 
+log output) and subsequently opens a socket to signal cloud run that the container is ready.
+
+```bash
+runproxy \ 
+  # listen on 0.0.0.0:8080 and forward tcp conns to 127.0.0.1:8181
+  -l 0.0.0.0:8080 \
+  -d 127.0.0.1:8181 \
+  # assume the app has been started if the following pattern matches a line in the stdout output
+  -m '^.*Started application in.*seconds.*$' \
+  # the command line to launch the downstream app
+  -- java -jar app.jar
+```
 
 ## License
 

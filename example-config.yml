@@ -1,9 +1,0 @@
-version: "runproxy/1"
-listenAddress: 0.0.0.0:8088
-serviceListenAddress: localhost:8000
-service:
-  command: [ "bash", "-c", "sleep 3 && echo 'Started application in 6.993 seconds.' && python3 -m http.server" ]
-readyCheck:
-  startupMessageMatch: '^.*Started application in.*seconds.*$'
-  http:
-    endpointAddress: "http://localhost:8000/actuator/health"

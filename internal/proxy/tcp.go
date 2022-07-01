@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"github.com/cbuschka/go-runproxy/internal/config"
 	"github.com/cbuschka/go-runproxy/internal/util"
 	"io"
 	"log"
@@ -13,6 +14,10 @@ import (
 type TcpProxyStrategy struct {
 	listenAddress         string
 	targetEndpointAddress string
+}
+
+func NewProxy(ctx context.Context, cfg *config.Config) (*TcpProxyStrategy, error) {
+	return &TcpProxyStrategy{listenAddress: cfg.ListenAddress, targetEndpointAddress: cfg.TargetAddress}, nil
 }
 
 func (h *TcpProxyStrategy) String() string {

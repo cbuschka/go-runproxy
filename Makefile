@@ -33,7 +33,9 @@ test:
 
 run:
 	@cd ${PROJECT_DIR} && \
-	go run cmd/runproxy.go -c example-config.yml
+	go run cmd/runproxy.go -l 0.0.0.0:8080 -d 127.0.0.1:8001 -t 5000 \
+		--match-line '^.*Started application in.*seconds.*$$' \
+		-- python3 -m http.server
 
 .PHONY: clean
 clean:

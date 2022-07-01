@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"github.com/cbuschka/go-runproxy/internal/config"
-	"github.com/cbuschka/go-runproxy/internal/healthcheck"
 	"github.com/cbuschka/go-runproxy/internal/proxy"
 	"github.com/cbuschka/go-runproxy/internal/service"
 	"log"
@@ -16,13 +15,13 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	eventChan := make(chan interface{})
 
-	svc, err := service.NewService(ctx, cfg.Service.Command, cfg.Service.StartupMessageMatch)
+	svc, err := service.NewService(ctx, cfg.Service.Command, cfg.StartupMessageMatch)
 	if err != nil {
 		cancelFunc()
 		return nil, err
 	}
 
-	prx, err := proxy.NewProxy(ctx, cfg.Proxy)
+	prx, err := proxy.NewProxy(ctx, cfg)
 	if err != nil {
 		cancelFunc()
 		return nil, err
@@ -31,8 +30,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	server := Server{ctx: ctx, cancelFunc: cancelFunc,
 		eventChan: eventChan,
 		proxy:     prx,
-		service:   svc,
-		probe:     healthcheck.NewHealthcheck(ctx, cfg.Healthcheck)}
+		service:   svc}
 	return &server, nil
 }
 
@@ -40,9 +38,8 @@ type Server struct {
 	ctx        context.Context
 	cancelFunc context.CancelFunc
 	eventChan  chan interface{}
-	proxy      *proxy.Proxy
+	proxy      *proxy.TcpProxyStrategy
 	service    *service.Service
-	probe      *healthcheck.Healthcheck
 }
 
 func (s *Server) Run() error {
@@ -60,7 +57,7 @@ func (s *Server) Run() error {
 			if err, isErr := event.(error); isErr {
 				return err
 			} else if "service started" == event {
-				go s.startProbe()
+				// ok
 			} else if "service available" == event {
 				go s.startProxy()
 			} else if "service stopped" == event {
@@ -98,11 +95,5 @@ func (s *Server) shutdown() {
 }
 
 func (s *Server) startProxy() {
-	s.proxy.Start(s.eventChan)
-}
-
-func (s *Server) startProbe() {
-
-	log.Println("Starting healthcheck...")
-	s.probe.Watch(s.eventChan)
+	s.proxy.Start(s.ctx, s.eventChan)
 }

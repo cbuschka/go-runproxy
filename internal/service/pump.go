@@ -31,10 +31,12 @@ func pump(rd io.Reader, prefix string, startupMessageMatchPattern *regexp.Regexp
 			startupMessageSeen = true
 		}
 
-		log.Println(prefixStr, lineStr)
-		if err != nil {
-			eventChan <- err
-			return
+		if lineStr != "" {
+			log.Println(prefixStr, lineStr)
+			if err != nil {
+				eventChan <- err
+				return
+			}
 		}
 	}
 }

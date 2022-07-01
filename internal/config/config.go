@@ -1,113 +1,38 @@
 package config
 
 import (
-	"fmt"
-	"gopkg.in/yaml.v3"
-	"log"
-	"os"
-	"strings"
+	"github.com/jessevdk/go-flags"
+	"io"
 )
 
-type HealthcheckConfig struct {
-	Http                  *HttpHealthcheckConfig `yaml:"http"`
-	Command               []string               `yaml:"command"`
-	CheckIntervalMillis   int                    `yaml:"checkIntervalMillis"`
-	RecheckIntervalMillis int                    `yaml:"recheckIntervalMillis"`
-}
-
-type HttpHealthcheckConfig struct {
-	EndpointAddress string `yaml:"endpointAddress"`
-}
-
-type HttpProxyConfig struct {
-	ListenAddress string `yaml:"listenAddress"`
-	TargetBaseUrl string `yaml:"targetBaseUrl"`
-}
-
-type TcpProxyConfig struct {
-	ListenAddress         string `yaml:"listenAddress"`
-	TargetEndpointAddress string `yaml:"targetEndpointAddress"`
-}
-
-type ProxyConfig struct {
-	Http *HttpProxyConfig `yaml:"http"`
-	Tcp  *TcpProxyConfig  `yaml:"tcp"`
-}
-
-type ServiceConfig struct {
-	Command             []string `yaml:"command"`
-	StartupMessageMatch string   `yaml:"startupMessageMatch"`
-}
-
 type Config struct {
-	Version     string            `yaml:"version"`
-	Proxy       ProxyConfig       `yaml:"proxy"`
-	Service     ServiceConfig     `yaml:"service"`
-	Healthcheck HealthcheckConfig `yaml:"healthcheck"`
+	ListenAddress        string `short:"l" long:"listen-address" description:"listen address ip:port"`
+	TargetAddress        string `short:"d" long:"destination-address" description:"destination address ip:port"`
+	StartupMessageMatch  string `short:"m" long:"match-line" description:"regex for matching startup message line"`
+	StartupTimeoutMillis uint   `short:"t" long:"startup-timeout" description:"max time to wait for startup finished in millis"`
+	Service              struct {
+		Command []string `required:"yes" description:"the downstream service to start"`
+	} `positional-args:"yes" `
 }
 
-func (c *Config) overrideFromCommandLine(commandLine []string, cmdlineCfg *cmdlineConfig) error {
+func NewConfig() *Config {
+	return &Config{}
+}
 
-	serviceCommand := extractServiceCommand(commandLine)
-	if len(serviceCommand) > 0 {
-		c.Service.Command = serviceCommand
-	}
+func (c *Config) PrintUsage(out io.Writer) {
+	parser := flags.NewParser(c, flags.Default)
+	parser.WriteHelp(out)
+}
 
-	if cmdlineCfg.ListenAddress != "" {
-		log.Printf("Overriding listen address from command line: %s", cmdlineCfg.ListenAddress)
-		c.Proxy.Http.ListenAddress = cmdlineCfg.ListenAddress
-	}
+func (c *Config) Parse(commandLine []string) error {
 
-	if cmdlineCfg.ServiceCommand != "" {
-		log.Printf("Overriding service command from command line: %s", cmdlineCfg.ServiceCommand)
-		c.Service.Command = strings.Split(cmdlineCfg.ServiceCommand, " ")
+	parser := flags.NewParser(c, flags.PassDoubleDash)
+	_, err := parser.ParseArgs(commandLine)
+	if err != nil {
+		return err
 	}
 
 	return nil
-}
-
-func NewConfig(commandLine []string) (*Config, error) {
-	cmdlnCfg, err := parseCommandline(commandLine)
-	if err != nil {
-		return nil, err
-	}
-
-	cfg := Config{
-		Version: "runproxy/1",
-		Proxy:   ProxyConfig{Http: nil, Tcp: nil},
-		Service: ServiceConfig{Command: []string{"python3", "-m", "http.server"}, StartupMessageMatch: ""},
-		Healthcheck: HealthcheckConfig{
-			Command:               []string{},
-			Http:                  nil,
-			CheckIntervalMillis:   300,
-			RecheckIntervalMillis: 30000,
-		},
-	}
-
-	if cmdlnCfg.ConfigFile != "" {
-		log.Printf("Loading config from %s...", cmdlnCfg.ConfigFile)
-
-		cfgBytes, err := os.ReadFile(cmdlnCfg.ConfigFile)
-		if err != nil {
-			return nil, err
-		}
-
-		err = yaml.Unmarshal(cfgBytes, &cfg)
-		if err != nil {
-			return nil, err
-		}
-
-		if cfg.Version != "runproxy/1" {
-			return nil, fmt.Errorf("invalid version, expected runproxy/1")
-		}
-	}
-
-	err = cfg.overrideFromCommandLine(commandLine, cmdlnCfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
 }
 
 func extractServiceCommand(commandLine []string) []string {
