@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/cbuschka/go-runproxy/internal/config"
+	"github.com/cbuschka/go-runproxy/internal/console"
 	"github.com/cbuschka/go-runproxy/internal/util"
 	"io"
-	"log"
 	"net"
 	"sync/atomic"
 )
@@ -26,7 +26,7 @@ func (h *TcpProxyStrategy) String() string {
 
 func (s *TcpProxyStrategy) Start(ctx context.Context, eventChan chan interface{}) {
 
-	log.Printf("Listening on %s...", s.listenAddress)
+	console.Infof("Listening on %s...", s.listenAddress)
 
 	l, err := net.Listen("tcp", s.listenAddress)
 	if err != nil {
@@ -55,12 +55,12 @@ func (s *TcpProxyStrategy) acceptAndProcess(ctx context.Context, l net.Listener,
 }
 
 func (s *TcpProxyStrategy) handleRequest(connId uint64, upstreamConn net.Conn) {
-	log.Printf("Conn #%d opened.", connId)
+	console.Infof("Conn #%d opened.", connId)
 
 	downstreamConn, err := net.Dial("tcp", s.targetEndpointAddress)
 	if err != nil {
 		defer upstreamConn.Close()
-		log.Printf("error connecting to downstream, %v", err.Error())
+		console.Infof("error connecting to downstream, %v", err.Error())
 		return
 	}
 
@@ -71,7 +71,7 @@ func (s *TcpProxyStrategy) handleRequest(connId uint64, upstreamConn net.Conn) {
 	nursery.Start(func() { s.forward(upstreamConn, downstreamConn) })
 	nursery.Start(func() { s.forward(downstreamConn, upstreamConn) })
 	nursery.Wait()
-	log.Printf("Conn #%d closed.", connId)
+	console.Infof("Conn #%d closed.", connId)
 }
 
 func (s *TcpProxyStrategy) forward(in net.Conn, out net.Conn) {
@@ -80,7 +80,7 @@ func (s *TcpProxyStrategy) forward(in net.Conn, out net.Conn) {
 		cnt, err := in.Read(bbuf)
 		if err != nil {
 			if err != io.EOF {
-				log.Printf("error reading, %v", err.Error())
+				console.Infof("error reading, %v", err.Error())
 			}
 			return
 		}
@@ -88,7 +88,7 @@ func (s *TcpProxyStrategy) forward(in net.Conn, out net.Conn) {
 		_, err = out.Write(bbuf[0:cnt])
 		if err != nil {
 			if err != io.EOF {
-				log.Printf("error writing, %v", err.Error())
+				console.Infof("error writing, %v", err.Error())
 			}
 			return
 		}

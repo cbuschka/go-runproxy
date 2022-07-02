@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"github.com/cbuschka/go-runproxy/internal/config"
+	"github.com/cbuschka/go-runproxy/internal/console"
 	"github.com/cbuschka/go-runproxy/internal/proxy"
 	"github.com/cbuschka/go-runproxy/internal/service"
-	"log"
 	"os"
 	"os/signal"
 )
@@ -53,7 +53,7 @@ func (s *Server) Run() error {
 	for {
 		select {
 		case event := <-s.eventChan:
-			log.Printf("Event \"%v\" seen.", event)
+			console.Infof("Event \"%v\" seen.", event)
 			if err, isErr := event.(error); isErr {
 				return err
 			} else if "service started" == event {
@@ -82,14 +82,14 @@ func (s *Server) installSigHandler() {
 }
 
 func (s *Server) shutdown() {
-	log.Println("Shutting down...")
+	console.Info("Shutting down...")
 
 	if s.cancelFunc != nil {
 		s.cancelFunc()
 	}
 
 	if s.service != nil {
-		log.Println("Killing service...")
+		console.Info("Killing service...")
 		s.service.Kill()
 	}
 }

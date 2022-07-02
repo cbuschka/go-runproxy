@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"github.com/cbuschka/go-runproxy/internal/command"
+	"github.com/cbuschka/go-runproxy/internal/console"
 	"os"
 )
 
 func main() {
 	err := command.Run(os.Args)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "failed: %v", err)
+		console.Infof("failed: %v", err)
 		os.Exit(1)
 	}
 }

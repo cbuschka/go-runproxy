@@ -2,15 +2,12 @@ package service
 
 import (
 	"bufio"
-	"fmt"
+	"github.com/cbuschka/go-runproxy/internal/console"
 	"io"
-	"log"
 	"regexp"
 )
 
-func pump(rd io.Reader, prefix string, startupMessageMatchPattern *regexp.Regexp, eventChan chan<- interface{}) {
-
-	prefixStr := fmt.Sprintf("%s ", prefix)
+func pump(rd io.Reader, startupMessageMatchPattern *regexp.Regexp, eventChan chan<- interface{}) {
 
 	bufferedRd := bufio.NewReader(rd)
 
@@ -32,7 +29,7 @@ func pump(rd io.Reader, prefix string, startupMessageMatchPattern *regexp.Regexp
 		}
 
 		if lineStr != "" {
-			log.Println(prefixStr, lineStr)
+			console.Info(lineStr)
 			if err != nil {
 				eventChan <- err
 				return

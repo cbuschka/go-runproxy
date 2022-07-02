@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
+	"github.com/cbuschka/go-runproxy/internal/console"
 	"os/exec"
 	"regexp"
 )
@@ -30,7 +30,7 @@ func NewService(ctx context.Context, command []string, startupMessageMatch strin
 }
 
 func (s *Service) run(eventChan chan<- interface{}) {
-	log.Printf("Starting service %v...", s.command)
+	console.Infof("Starting service %v...", s.command)
 
 	program := s.command[0]
 	argv := s.command[1:]
@@ -42,39 +42,39 @@ func (s *Service) run(eventChan chan<- interface{}) {
 		eventChan <- err
 		return
 	}
-	go pump(stdoutRd, "Service (stdout):", s.startupMessageMatchPattern, eventChan)
+	go pump(stdoutRd, s.startupMessageMatchPattern, eventChan)
 
 	stderrRd, err := cmd.StderrPipe()
 	if err != nil {
 		eventChan <- err
 		return
 	}
-	go pump(stderrRd, "Service (stderr):", s.startupMessageMatchPattern, eventChan)
+	go pump(stderrRd, s.startupMessageMatchPattern, eventChan)
 
 	err = cmd.Start()
 	if err != nil {
 		eventChan <- err
 		return
 	}
-	log.Printf("Service %v started.", s.command)
+	console.Infof("Service %v started.", s.command)
 
 	eventChan <- "service started"
 
 	err = cmd.Wait()
 	if err != nil {
-		log.Printf("Waiting for service %v failed: %v", s.command, err)
+		console.Infof("Waiting for service %v failed: %v", s.command, err)
 		eventChan <- err
 		return
 	}
 
 	exitCode := cmd.ProcessState.ExitCode()
 	if exitCode != 0 {
-		log.Printf("Service %v stopped with %d.", s.command, exitCode)
+		console.Infof("Service %v stopped with %d.", s.command, exitCode)
 		eventChan <- fmt.Errorf("process exited with %d", exitCode)
 		return
 	}
 
-	log.Printf("Service %v exited normally.", s.command)
+	console.Infof("Service %v exited normally.", s.command)
 
 	eventChan <- "service stopped"
 }
