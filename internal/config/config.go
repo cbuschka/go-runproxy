@@ -6,12 +6,11 @@ import (
 )
 
 type Config struct {
-	Verbose              bool   `short:"v" long:"verbose" description:"enable verbose output"`
-	ListenAddress        string `short:"l" long:"listen-address" description:"listen address ip:port"`
-	TargetAddress        string `short:"d" long:"destination-address" description:"destination address ip:port"`
-	StartupMessageMatch  string `short:"m" long:"match-line" description:"regex for matching startup message line"`
-	StartupTimeoutMillis uint   `short:"t" long:"startup-timeout" description:"max time to wait for startup finished in millis"`
-	Service              struct {
+	Verbose             bool   `short:"v" long:"verbose" description:"enable verbose output"`
+	ListenAddress       string `required:"yes" short:"l" long:"listen-address" description:"listen address ip:port"`
+	TargetAddress       string `required:"yes" short:"d" long:"destination-address" description:"destination address ip:port"`
+	StartupMessageMatch string `required:"yes" short:"m" long:"match-line" description:"regex for matching startup message line"`
+	Service             struct {
 		Command []string `required:"yes" description:"the downstream service to start"`
 	} `positional-args:"yes" `
 }
@@ -34,18 +33,4 @@ func (c *Config) Parse(commandLine []string) error {
 	}
 
 	return nil
-}
-
-func extractServiceCommand(commandLine []string) []string {
-	cmd := []string{}
-	doubleDashSeen := false
-	for _, arg := range commandLine {
-		if doubleDashSeen {
-			cmd = append(cmd, arg)
-		} else if arg == "--" {
-			doubleDashSeen = true
-		}
-	}
-
-	return cmd
 }

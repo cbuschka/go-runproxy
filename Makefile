@@ -33,7 +33,7 @@ test:
 
 run:
 	@cd ${PROJECT_DIR} && \
-	go run cmd/runproxy.go -v -l 0.0.0.0:8080 -d 127.0.0.1:8000 -t 5000 \
+	go run cmd/runproxy.go -v -l 0.0.0.0:8080 -d 127.0.0.1:8000 \
 		--match-line '^Serving HTTP on.*$$' \
 		-- bash -c 'python3 -u -m http.server'
 
