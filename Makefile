@@ -33,9 +33,9 @@ test:
 
 run:
 	@cd ${PROJECT_DIR} && \
-	go run cmd/runproxy.go -l 0.0.0.0:8080 -d 127.0.0.1:8001 -t 5000 \
-		--match-line '^.*Started application in.*seconds.*$$' \
-		-- python3 -m http.server
+	go run cmd/runproxy.go -v -l 0.0.0.0:8080 -d 127.0.0.1:8000 -t 5000 \
+		--match-line '^Serving HTTP on.*$$' \
+		-- bash -c 'python3 -u -m http.server'
 
 .PHONY: clean
 clean:

@@ -17,6 +17,9 @@ func Run(commandLine []string) error {
 	}
 
 	printRunInfo()
+	if cfg.Verbose {
+		console.EnableVerboseOutput()
+	}
 
 	srv, err := server.NewServer(cfg)
 	if err != nil {

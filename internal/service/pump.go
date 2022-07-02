@@ -22,18 +22,20 @@ func pump(rd io.Reader, startupMessageMatchPattern *regexp.Regexp, eventChan cha
 			return
 		}
 
+		if len(line) == 0 {
+			continue
+		}
+
 		lineStr := string(line)
 		if !startupMessageSeen && startupMessageMatchPattern != nil && startupMessageMatchPattern.MatchString(lineStr) {
 			eventChan <- "startup message seen"
 			startupMessageSeen = true
 		}
 
-		if lineStr != "" {
-			console.Info(lineStr)
-			if err != nil {
-				eventChan <- err
-				return
-			}
+		console.Info(lineStr)
+		if err != nil {
+			eventChan <- err
+			return
 		}
 	}
 }

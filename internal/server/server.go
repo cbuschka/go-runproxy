@@ -53,17 +53,22 @@ func (s *Server) Run() error {
 	for {
 		select {
 		case event := <-s.eventChan:
-			console.Infof("Event \"%v\" seen.", event)
+			console.Debugf("Event \"%v\" seen.", event)
 			if err, isErr := event.(error); isErr {
 				return err
 			} else if "service started" == event {
-				// ok
-			} else if "service available" == event {
+				console.Info("Service started. Waiting to come up.")
+			} else if "service available" == event || "startup message seen" == event {
+				console.Info("Service available. Starting proxy.")
 				go s.startProxy()
+			} else if "proxy started" == event {
+				break
 			} else if "service stopped" == event {
 				return nil
 			} else if "shutdown" == event {
 				break
+			} else {
+				console.Debugf("Event %s unknown.", event)
 			}
 		case _ = <-s.ctx.Done():
 			break

@@ -34,6 +34,8 @@ func (s *TcpProxyStrategy) Start(ctx context.Context, eventChan chan interface{}
 		return
 	}
 
+	eventChan <- "proxy started"
+
 	go s.acceptAndProcess(ctx, l, eventChan)
 }
 
@@ -55,7 +57,7 @@ func (s *TcpProxyStrategy) acceptAndProcess(ctx context.Context, l net.Listener,
 }
 
 func (s *TcpProxyStrategy) handleRequest(connId uint64, upstreamConn net.Conn) {
-	console.Infof("Conn #%d opened.", connId)
+	console.Debugf("Conn #%d opened.", connId)
 
 	downstreamConn, err := net.Dial("tcp", s.targetEndpointAddress)
 	if err != nil {
@@ -71,7 +73,7 @@ func (s *TcpProxyStrategy) handleRequest(connId uint64, upstreamConn net.Conn) {
 	nursery.Start(func() { s.forward(upstreamConn, downstreamConn) })
 	nursery.Start(func() { s.forward(downstreamConn, upstreamConn) })
 	nursery.Wait()
-	console.Infof("Conn #%d closed.", connId)
+	console.Debugf("Conn #%d closed.", connId)
 }
 
 func (s *TcpProxyStrategy) forward(in net.Conn, out net.Conn) {

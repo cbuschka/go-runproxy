@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Verbose              bool   `short:"v" long:"verbose" description:"enable verbose output"`
 	ListenAddress        string `short:"l" long:"listen-address" description:"listen address ip:port"`
 	TargetAddress        string `short:"d" long:"destination-address" description:"destination address ip:port"`
 	StartupMessageMatch  string `short:"m" long:"match-line" description:"regex for matching startup message line"`
